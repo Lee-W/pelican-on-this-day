@@ -110,6 +110,7 @@ major_version_zero = true
 
 [tool.pytest]
 testpaths = ["tests"]
+addopts = ["--cov=pelican.plugins.on_this_day", "--cov-report=term-missing"]
 
 [tool.coverage.run]
 source = ["pelican/plugins/on_this_day"]
