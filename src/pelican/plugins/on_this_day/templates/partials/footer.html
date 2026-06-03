@@ -1,0 +1,42 @@
+{% if on_this_day_articles %}
+<aside id="on-this-day">
+  <div class="inner">
+    <p class="on-this-day-label">歷史上的今天</p>
+    <div class="on-this-day-grid">
+      {% for article in on_this_day_articles %}
+        <a class="on-this-day-item" href="{{ SITEURL }}/{{ article.url }}">
+          <section class="post-nav-teaser">
+            <p class="post-nav-meta"><time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime("%Y") }}</time></p>
+            <h2 class="post-nav-title">{{ article.title|striptags|e }}</h2>
+          </section>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</aside>
+{% endif %}
+
+<div class="nav-footer">
+  <nav class="nav-wrapper" aria-label="Footer">
+    <span class="nav-copy">{{ SITENAME }} &copy; {{ COPYRIGHT_YEAR|default(2026) }}</span>
+
+    <span class="nav-credits">
+      {% if SHOW_CREDITS|default(True) %}
+        {% if SHOW_CREDITS and SHOW_CREDITS.left %}
+          {% set left=SHOW_CREDITS.left %}
+        {% else %}
+          {% set left %}{% trans %}Theme{% endtrans %} <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a> &bull;{% endset %}
+        {% endif %}
+        {% if SHOW_CREDITS and SHOW_CREDITS.right %}
+          {% set right=SHOW_CREDITS.right %}
+        {% else %}
+          {% set pelican_link %}<a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a>{% endset %}
+          {% set attila_link %}<a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a>{% endset %}
+          {% set left %}{% trans pelican=pelican_link, attila=attila_link %}Published with {{ pelican }} &bull; Theme {{ attila }} &bull;{% endtrans %}{% endset %}
+        {% endif %}
+
+        {{ left }}
+      {% endif %}
+    </span>
+  </nav>
+</div>

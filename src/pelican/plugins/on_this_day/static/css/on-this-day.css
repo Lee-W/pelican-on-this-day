@@ -1,0 +1,71 @@
+#on-this-day {
+  position: relative;
+  margin-top: -1px;
+  border-top: 1px solid var(--color-background-contrast);
+  border-bottom: 1px solid var(--color-background-contrast);
+}
+
+#on-this-day .inner {
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.on-this-day-label {
+  margin: 0 0 0.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-content-secondary);
+}
+
+.on-this-day-grid {
+  display: flex;
+  flex-direction: column;
+  max-width: 50%;
+}
+
+.on-this-day-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--color-background-contrast);
+}
+
+.on-this-day-item:last-child {
+  border-bottom: none;
+}
+
+.on-this-day-item:focus,
+.on-this-day-item:hover {
+  color: inherit;
+}
+
+.on-this-day-item:focus .post-nav-title,
+.on-this-day-item:hover .post-nav-title {
+  color: var(--color-primary);
+}
+
+#on-this-day .post-nav-teaser {
+  min-height: unset;
+  padding: 0.6rem 0;
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+}
+
+#on-this-day .post-nav-meta {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+#on-this-day .post-nav-title {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+@media only screen and (max-width: 640px) {
+  .on-this-day-grid {
+    max-width: 100%;
+  }
+}
