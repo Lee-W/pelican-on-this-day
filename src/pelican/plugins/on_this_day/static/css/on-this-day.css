@@ -13,7 +13,7 @@
 .on-this-day-label {
   margin: 0 0 0.5rem;
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-content-secondary);

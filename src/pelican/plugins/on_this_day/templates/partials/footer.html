@@ -1,7 +1,7 @@
 {% if on_this_day_articles %}
 <aside id="on-this-day">
   <div class="inner">
-    <p class="on-this-day-label">歷史上的今天</p>
+    <p class="on-this-day-label">{% trans %}On This Day{% endtrans %}</p>
     <div class="on-this-day-grid">
       {% for article in on_this_day_articles %}
         <a class="on-this-day-item" href="{{ SITEURL }}/{{ article.url }}">

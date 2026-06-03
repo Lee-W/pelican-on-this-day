@@ -22,7 +22,10 @@ def _initialize(pelican: object) -> None:
 
     theme_overrides: list[str] = pelican.settings.get("THEME_TEMPLATES_OVERRIDES", [])  # type: ignore[union-attr]
     if _TEMPLATES_DIR not in theme_overrides:
-        pelican.settings["THEME_TEMPLATES_OVERRIDES"] = [*theme_overrides, _TEMPLATES_DIR]  # type: ignore[union-attr]
+        pelican.settings["THEME_TEMPLATES_OVERRIDES"] = [
+            *theme_overrides,
+            _TEMPLATES_DIR,
+        ]  # type: ignore[union-attr]
 
 
 def _copy_static(generator: object) -> None:

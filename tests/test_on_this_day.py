@@ -2,13 +2,9 @@
 
 from __future__ import annotations
 
-import shutil
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
-
-import pytest
 
 import pelican.plugins.on_this_day.on_this_day as otd_module
 from pelican.plugins.on_this_day.on_this_day import (
@@ -19,7 +15,9 @@ from pelican.plugins.on_this_day.on_this_day import (
 )
 
 
-def make_article(year: int, month: int, day: int, title: str = "Test") -> SimpleNamespace:
+def make_article(
+    year: int, month: int, day: int, title: str = "Test"
+) -> SimpleNamespace:
     return SimpleNamespace(
         title=title,
         date=datetime(year, month, day, 12, 0),
@@ -35,7 +33,9 @@ def make_generator(articles: list, output_path: str = "/tmp/output") -> SimpleNa
 
 
 def make_pelican(css_override: list | None = None) -> SimpleNamespace:
-    return SimpleNamespace(settings={"CSS_OVERRIDE": css_override or [], "THEME_TEMPLATES_OVERRIDES": []})
+    return SimpleNamespace(
+        settings={"CSS_OVERRIDE": css_override or [], "THEME_TEMPLATES_OVERRIDES": []}
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -73,7 +73,10 @@ def test_initialize_templates_overrides_idempotent():
     pelican = make_pelican()
     _initialize(pelican)
     _initialize(pelican)
-    assert pelican.settings["THEME_TEMPLATES_OVERRIDES"].count(otd_module._TEMPLATES_DIR) == 1
+    assert (
+        pelican.settings["THEME_TEMPLATES_OVERRIDES"].count(otd_module._TEMPLATES_DIR)
+        == 1
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +127,9 @@ def test_inject_empty_when_no_match():
 
 def test_inject_multiple_years():
     today = datetime.now()
-    articles = [make_article(today.year - i, today.month, today.day) for i in range(1, 4)]
+    articles = [
+        make_article(today.year - i, today.month, today.day) for i in range(1, 4)
+    ]
     generator = make_generator(articles)
     _inject_on_this_day(generator)
     assert len(generator.context["on_this_day_articles"]) == 3

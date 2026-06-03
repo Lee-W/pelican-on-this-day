@@ -16,8 +16,10 @@ jobs:
         with:
           token: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
           fetch-depth: 0
-      - name: Set up Python
+      - name: Install uv
         uses: astral-sh/setup-uv@v7
+        with:
+          version: "8.1.0"
       - name: Build
         run: uv build
       - name: Publish package to PyPI
