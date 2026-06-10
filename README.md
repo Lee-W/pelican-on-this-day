@@ -1,6 +1,8 @@
 # pelican-on-this-day
 
-Pelican plugin that injects articles published on the same month/day in previous years into the template context as `on_this_day_articles`.
+Pelican plugin that shows articles published on the same month/day in previous years — an "On This Day" section.
+
+The section is rendered **client-side**: at build time the plugin writes a JSON map of `"MM-DD"` → articles to the output, and the bundled JS picks the visitor's local date at page load. The section therefore stays correct on a static host without daily rebuilds, and articles from the visitor's current year are excluded.
 
 ## Usage
 
@@ -13,26 +15,22 @@ PLUGINS = [
 ]
 ```
 
-Then use `on_this_day_articles` in your theme templates. Example (e.g. in a footer partial):
+That's it for the [Attila](https://github.com/Lee-W/attila) theme — the plugin overrides the footer partial with a placeholder and wires everything up:
 
 ```html
-{% if on_this_day_articles %}
-<aside id="on-this-day">
+<aside id="on-this-day" hidden data-source="{{ SITEURL }}/static/pelican_on_this_day/on-this-day.json">
   <div class="inner">
-    <p class="on-this-day-label">歷史上的今天</p>
-    <div class="on-this-day-grid">
-      {% for article in on_this_day_articles %}
-        <a class="on-this-day-item" href="{{ SITEURL }}/{{ article.url }}">
-          <section class="post-nav-teaser">
-            <p class="post-nav-meta"><time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime("%Y") }}</time></p>
-            <h2 class="post-nav-title">{{ article.title|striptags|e }}</h2>
-          </section>
-        </a>
-      {% endfor %}
-    </div>
+    <p class="on-this-day-label">{% trans %}On This Day{% endtrans %}</p>
+    <div class="on-this-day-grid"></div>
   </div>
 </aside>
-{% endif %}
+<script src="{{ SITEURL }}/static/pelican_on_this_day/js/on-this-day.js" defer></script>
 ```
 
-The plugin automatically copies `on-this-day.css` to `output/static/pelican_on_this_day/css/` and appends it to `CSS_OVERRIDE` (used by the [Attila](https://github.com/Lee-W/attila) theme).
+For other themes, include the same placeholder markup anywhere in your templates; the JS fills `.on-this-day-grid` and removes `hidden` when there are matching articles. The section stays hidden when there is nothing to show (or when the data file can't be fetched).
+
+## What gets emitted
+
+- `output/static/pelican_on_this_day/on-this-day.json` — `{"MM-DD": [{"year", "date", "title", "url"}, ...], ...}`, newest first, URLs prefixed with `SITEURL`
+- `output/static/pelican_on_this_day/js/on-this-day.js` — client-side renderer
+- `output/static/pelican_on_this_day/css/on-this-day.css` — appended to `CSS_OVERRIDE` automatically

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,25 +11,35 @@ import pelican.plugins.on_this_day.on_this_day as otd_module
 from pelican.plugins.on_this_day.on_this_day import (
     _copy_static,
     _initialize,
-    _inject_on_this_day,
+    _write_on_this_day_data,
     register,
 )
 
 
 def make_article(
-    year: int, month: int, day: int, title: str = "Test"
+    year: int,
+    month: int,
+    day: int,
+    title: str = "Test",
+    url: str = "posts/test.html",
 ) -> SimpleNamespace:
     return SimpleNamespace(
         title=title,
+        url=url,
         date=datetime(year, month, day, 12, 0),
     )
 
 
-def make_generator(articles: list, output_path: str = "/tmp/output") -> SimpleNamespace:
+def make_generator(
+    articles: list,
+    output_path: str = "/tmp/output",
+    siteurl: str = "https://example.com",
+) -> SimpleNamespace:
     return SimpleNamespace(
         articles=articles,
         context={},
         output_path=output_path,
+        settings={"SITEURL": siteurl},
     )
 
 
@@ -36,6 +47,12 @@ def make_pelican(css_override: list | None = None) -> SimpleNamespace:
     return SimpleNamespace(
         settings={"CSS_OVERRIDE": css_override or [], "THEME_TEMPLATES_OVERRIDES": []}
     )
+
+
+def read_data(output_path: Path) -> dict:
+    data_file = output_path / "static" / "pelican_on_this_day" / "on-this-day.json"
+    data: dict = json.loads(data_file.read_text(encoding="utf-8"))
+    return data
 
 
 # ---------------------------------------------------------------------------
@@ -80,59 +97,94 @@ def test_initialize_templates_overrides_idempotent():
 
 
 # ---------------------------------------------------------------------------
-# _inject_on_this_day
+# _write_on_this_day_data
 # ---------------------------------------------------------------------------
 
 
-def test_inject_matching_articles():
+def test_write_groups_by_month_day(tmp_path: Path):
+    generator = make_generator(
+        [
+            make_article(2020, 6, 11, "A"),
+            make_article(2021, 6, 11, "B"),
+            make_article(2021, 12, 25, "C"),
+        ],
+        output_path=str(tmp_path),
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert {a["title"] for a in data["06-11"]} == {"A", "B"}
+    assert [a["title"] for a in data["12-25"]] == ["C"]
+
+
+def test_write_includes_current_year(tmp_path: Path):
+    # Year filtering happens client-side against the visitor's clock,
+    # so the data must include every year.
     today = datetime.now()
-    article = make_article(today.year - 1, today.month, today.day, "Past article")
-    generator = make_generator([article])
-    _inject_on_this_day(generator)
-    assert generator.context["on_this_day_articles"] == [article]
+    generator = make_generator(
+        [make_article(today.year, 6, 11, "This year")], output_path=str(tmp_path)
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert data["06-11"][0]["year"] == today.year
 
 
-def test_inject_excludes_current_year():
-    today = datetime.now()
-    article = make_article(today.year, today.month, today.day, "This year")
-    generator = make_generator([article])
-    _inject_on_this_day(generator)
-    assert generator.context["on_this_day_articles"] == []
+def test_write_sorted_newest_first(tmp_path: Path):
+    generator = make_generator(
+        [
+            make_article(2020, 6, 11, "2020"),
+            make_article(2018, 6, 11, "2018"),
+            make_article(2022, 6, 11, "2022"),
+        ],
+        output_path=str(tmp_path),
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert [a["title"] for a in data["06-11"]] == ["2022", "2020", "2018"]
 
 
-def test_inject_excludes_different_day():
-    today = datetime.now()
-    other_day = today.day % 28 + 1
-    article = make_article(today.year - 1, today.month, other_day, "Other day")
-    generator = make_generator([article])
-    _inject_on_this_day(generator)
-    assert generator.context["on_this_day_articles"] == []
+def test_write_empty_when_no_articles(tmp_path: Path):
+    generator = make_generator([], output_path=str(tmp_path))
+    _write_on_this_day_data(generator)
+    assert read_data(tmp_path) == {}
 
 
-def test_inject_sorted_by_date():
-    today = datetime.now()
-    a2020 = make_article(2020, today.month, today.day, "2020")
-    a2018 = make_article(2018, today.month, today.day, "2018")
-    a2022 = make_article(2022, today.month, today.day, "2022")
-    generator = make_generator([a2020, a2022, a2018])
-    _inject_on_this_day(generator)
-    assert generator.context["on_this_day_articles"] == [a2018, a2020, a2022]
+def test_write_url_prefixed_with_siteurl(tmp_path: Path):
+    generator = make_generator(
+        [make_article(2020, 6, 11, url="posts/foo.html")],
+        output_path=str(tmp_path),
+        siteurl="https://blog.example",
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert data["06-11"][0]["url"] == "https://blog.example/posts/foo.html"
 
 
-def test_inject_empty_when_no_match():
-    generator = make_generator([])
-    _inject_on_this_day(generator)
-    assert generator.context["on_this_day_articles"] == []
+def test_write_strips_html_tags_from_title(tmp_path: Path):
+    generator = make_generator(
+        [make_article(2020, 6, 11, title="Hello <code>world</code>")],
+        output_path=str(tmp_path),
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert data["06-11"][0]["title"] == "Hello world"
 
 
-def test_inject_multiple_years():
-    today = datetime.now()
-    articles = [
-        make_article(today.year - i, today.month, today.day) for i in range(1, 4)
-    ]
-    generator = make_generator(articles)
-    _inject_on_this_day(generator)
-    assert len(generator.context["on_this_day_articles"]) == 3
+def test_write_preserves_non_ascii(tmp_path: Path):
+    generator = make_generator(
+        [make_article(2020, 6, 11, title="歷史上的今天")], output_path=str(tmp_path)
+    )
+    _write_on_this_day_data(generator)
+    raw = (tmp_path / "static" / "pelican_on_this_day" / "on-this-day.json").read_text(
+        encoding="utf-8"
+    )
+    assert "歷史上的今天" in raw
+
+
+def test_write_includes_iso_date(tmp_path: Path):
+    generator = make_generator([make_article(2020, 6, 11)], output_path=str(tmp_path))
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert data["06-11"][0]["date"] == "2020-06-11T12:00:00"
 
 
 # ---------------------------------------------------------------------------
@@ -140,11 +192,18 @@ def test_inject_multiple_years():
 # ---------------------------------------------------------------------------
 
 
-def test_copy_static(tmp_path: Path):
+def test_copy_static_css(tmp_path: Path):
     generator = make_generator([], output_path=str(tmp_path))
     _copy_static(generator)
     css_dst = tmp_path / "static" / "pelican_on_this_day" / "css" / "on-this-day.css"
     assert css_dst.exists()
+
+
+def test_copy_static_js(tmp_path: Path):
+    generator = make_generator([], output_path=str(tmp_path))
+    _copy_static(generator)
+    js_dst = tmp_path / "static" / "pelican_on_this_day" / "js" / "on-this-day.js"
+    assert js_dst.exists()
 
 
 # ---------------------------------------------------------------------------
@@ -160,4 +219,4 @@ def test_register_connects_signals():
     assert _initialize in connected
     connected = {r() for r in signals.article_generator_finalized.receivers.values()}
     assert _copy_static in connected
-    assert _inject_on_this_day in connected
+    assert _write_on_this_day_data in connected

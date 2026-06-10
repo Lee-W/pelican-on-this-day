@@ -21,7 +21,7 @@ Releases: `cz bump` updates the version in `pyproject.toml` and regenerates `CHA
 
 ## Architecture
 
-The plugin is a single-file implementation: `src/pelican/plugins/on_this_day/on_this_day.py`. Bundled static assets (`static/css/`) and templates (`templates/partials/`) are injected at build time.
+The plugin is a single-file implementation: `src/pelican/plugins/on_this_day/on_this_day.py`. Bundled static assets (`static/css/`, `static/js/`) and templates (`templates/partials/`) are injected at build time. The section itself is rendered **client-side** so it stays correct on a static host without daily rebuilds.
 
 ### Signal flow
 
@@ -29,11 +29,11 @@ The plugin is a single-file implementation: `src/pelican/plugins/on_this_day/on_
 
 1. `signals.initialized` → `_initialize`: appends the plugin's CSS URL to `CSS_OVERRIDE` and the plugin's `templates/` directory to `THEME_TEMPLATES_OVERRIDES` (both idempotent).
 2. `signals.article_generator_finalized` → `_copy_static`: copies `static/` to `output/static/pelican_on_this_day/`.
-3. `signals.article_generator_finalized` → `_inject_on_this_day`: filters all articles to those matching today's month/day from previous years, sorts by date, and injects the result as `on_this_day_articles` into the generator context.
+3. `signals.article_generator_finalized` → `_write_on_this_day_data`: groups **all** articles by `"MM-DD"` key (newest first, titles tag-stripped, URLs prefixed with `SITEURL`) and writes `output/static/pelican_on_this_day/on-this-day.json`. No date filtering happens at build time.
 
-### Template
+### Template + JS
 
-`templates/partials/footer.html` overrides the [Attila](https://github.com/Lee-W/attila) theme's footer partial. It renders `on_this_day_articles` (year + title per item) above the standard copyright bar, and is conditionally hidden when the list is empty.
+`templates/partials/footer.html` overrides the [Attila](https://github.com/Lee-W/attila) theme's footer partial. It renders a `hidden` placeholder `<aside id="on-this-day">` carrying the JSON URL in `data-source`, plus a deferred `<script>` tag. `static/js/on-this-day.js` fetches the JSON, picks the visitor's **local** month/day, filters out the visitor's current year, fills `.on-this-day-grid` via `textContent` (no HTML injection), and unhides the aside. On fetch failure or no matches the section stays hidden.
 
 ## Conventions
 

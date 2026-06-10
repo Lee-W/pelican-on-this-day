@@ -1,20 +1,10 @@
-{% if on_this_day_articles %}
-<aside id="on-this-day">
+<aside id="on-this-day" hidden data-source="{{ SITEURL }}/static/pelican_on_this_day/on-this-day.json">
   <div class="inner">
     <p class="on-this-day-label">{% trans %}On This Day{% endtrans %}</p>
-    <div class="on-this-day-grid">
-      {% for article in on_this_day_articles %}
-        <a class="on-this-day-item" href="{{ SITEURL }}/{{ article.url }}">
-          <section class="post-nav-teaser">
-            <p class="post-nav-meta"><time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime("%Y") }}</time></p>
-            <h2 class="post-nav-title">{{ article.title|striptags|e }}</h2>
-          </section>
-        </a>
-      {% endfor %}
-    </div>
+    <div class="on-this-day-grid"></div>
   </div>
 </aside>
-{% endif %}
+<script src="{{ SITEURL }}/static/pelican_on_this_day/js/on-this-day.js" defer></script>
 
 <div class="nav-footer">
   <nav class="nav-wrapper" aria-label="Footer">
