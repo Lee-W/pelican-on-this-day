@@ -33,7 +33,7 @@ The plugin is a single-file implementation: `src/pelican/plugins/on_this_day/on_
 
 ### Template + JS
 
-`templates/partials/footer.html` overrides the [Attila](https://github.com/Lee-W/attila) theme's footer partial. It renders a `hidden` placeholder `<aside id="on-this-day">` carrying the JSON URL in `data-source`, plus a deferred `<script>` tag. `static/js/on-this-day.js` fetches the JSON, picks the visitor's **local** month/day, filters out the visitor's current year, fills `.on-this-day-grid` via `textContent` (no HTML injection), and unhides the aside. On fetch failure or no matches the section stays hidden.
+`templates/partials/footer_extra.html` overrides the [Attila](https://github.com/Lee-W/attila) theme's empty `footer_extra` hook (included above the footer), so the theme's footer markup is not duplicated here. It renders a `hidden` placeholder `<aside id="on-this-day">` carrying the JSON URL in `data-source`, plus a deferred `<script>` tag. `static/js/on-this-day.js` fetches the JSON, picks the visitor's **local** month/day, filters out the visitor's current year, fills `.on-this-day-grid` via `textContent` (no HTML injection), and unhides the aside. On fetch failure or no matches the section stays hidden.
 
 ## Conventions
 

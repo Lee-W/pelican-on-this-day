@@ -15,7 +15,7 @@ PLUGINS = [
 ]
 ```
 
-That's it for the [Attila](https://github.com/Lee-W/attila) theme — the plugin overrides the footer partial with a placeholder and wires everything up:
+That's it for the [Attila](https://github.com/Lee-W/attila) theme (needs the version providing the `partials/footer_extra.html` hook) — the plugin overrides that hook with a placeholder and wires everything up:
 
 ```html
 <aside id="on-this-day" hidden data-source="{{ SITEURL }}/static/pelican_on_this_day/on-this-day.json">
