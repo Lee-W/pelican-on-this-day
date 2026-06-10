@@ -1,6 +1,8 @@
 #on-this-day {
   position: relative;
-  margin-top: -1px;
+  /* keep the border-top clear of the page's last element,
+     e.g. a trailing table's bottom border */
+  margin-top: 4rem;
   border-top: 1px solid var(--color-background-contrast);
   border-bottom: 1px solid var(--color-background-contrast);
 }
