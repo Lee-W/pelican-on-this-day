@@ -1,3 +1,9 @@
+## 0.4.0 (2026-06-11)
+
+### Feat
+
+- override Attila's footer_extra hook instead of the whole footer
+
 ## 0.3.0 (2026-06-11)
 
 ### BREAKING CHANGE
