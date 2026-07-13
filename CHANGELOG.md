@@ -1,3 +1,13 @@
+## 0.5.0 (2026-07-13)
+
+### Feat
+
+- add max-items cap, robust tag stripping, theme-agnostic docs
+
+### Fix
+
+- make pytest addopts/testpaths actually apply, add E/F to ruff
+
 ## 0.4.0 (2026-06-11)
 
 ### Feat
