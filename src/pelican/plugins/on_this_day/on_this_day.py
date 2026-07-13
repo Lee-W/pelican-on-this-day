@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 import shutil
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +21,27 @@ log = logging.getLogger(__name__)
 _CSS_STATIC_URL = "/static/pelican_on_this_day/css/on-this-day.css"
 _TEMPLATES_DIR = str(Path(__file__).parent / "templates")
 _DATA_FILENAME = "on-this-day.json"
-_TAG_RE = re.compile(r"<[^>]+>")
+_MAX_ITEMS_SETTING = "ON_THIS_DAY_MAX_ITEMS"
+
+
+class _TagStripper(HTMLParser):
+    """Collects only the text data of an HTML fragment, discarding markup."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._chunks: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        self._chunks.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._chunks)
+
+
+def _strip_tags(html: str) -> str:
+    stripper = _TagStripper()
+    stripper.feed(html)
+    return stripper.get_text()
 
 
 def _initialize(pelican: Any) -> None:
@@ -46,6 +66,7 @@ def _copy_static(generator: Any) -> None:
 
 def _write_on_this_day_data(generator: Any) -> None:
     siteurl = generator.settings.get("SITEURL", "")
+    max_items = generator.settings.get(_MAX_ITEMS_SETTING)
     data: dict[str, list[dict[str, Any]]] = {}
     for article in sorted(generator.articles, key=lambda a: a.date, reverse=True):
         key = f"{article.date.month:02d}-{article.date.day:02d}"
@@ -53,10 +74,12 @@ def _write_on_this_day_data(generator: Any) -> None:
             {
                 "year": article.date.year,
                 "date": article.date.isoformat(),
-                "title": _TAG_RE.sub("", article.title),
+                "title": _strip_tags(article.title),
                 "url": f"{siteurl}/{article.url}",
             }
         )
+    if max_items is not None:
+        data = {key: entries[:max_items] for key, entries in data.items()}
     dst = (
         Path(generator.output_path) / "static" / "pelican_on_this_day" / _DATA_FILENAME
     )

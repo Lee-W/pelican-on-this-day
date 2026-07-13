@@ -27,7 +27,23 @@ That's it for the [Attila](https://github.com/Lee-W/attila) theme (needs the ver
 <script src="{{ SITEURL }}/static/pelican_on_this_day/js/on-this-day.js" defer></script>
 ```
 
-For other themes, include the same placeholder markup anywhere in your templates; the JS fills `.on-this-day-grid` and removes `hidden` when there are matching articles. The section stays hidden when there is nothing to show (or when the data file can't be fetched).
+### For other themes
+
+The plugin only needs the placeholder `<aside>` and the script tag somewhere in your templates — no Attila-specific markup or CSS variables required:
+
+```html
+<aside id="on-this-day" hidden data-source="{{ SITEURL }}/static/pelican_on_this_day/on-this-day.json">
+  <p class="on-this-day-label">On This Day</p>
+  <div class="on-this-day-grid"></div>
+</aside>
+<script src="{{ SITEURL }}/static/pelican_on_this_day/js/on-this-day.js" defer></script>
+```
+
+The JS fills `.on-this-day-grid` with `<a class="on-this-day-item">` entries and removes `hidden` when there are matching articles. The section stays hidden when there is nothing to show (or when the data file can't be fetched). The bundled CSS (added to `CSS_OVERRIDE` automatically) styles those classes using `--color-background-contrast`, `--color-content-secondary`, and `--color-primary` custom properties — define them yourself, or skip the bundled CSS (drop `on-this-day.css` from `CSS_OVERRIDE` after the plugin adds it) and style `.on-this-day-item` and friends to match your theme.
+
+## Settings
+
+- `ON_THIS_DAY_MAX_ITEMS` (optional, default unlimited) — cap the number of articles shown per day, keeping the newest ones.
 
 ## What gets emitted
 

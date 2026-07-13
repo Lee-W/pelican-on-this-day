@@ -169,6 +169,45 @@ def test_write_strips_html_tags_from_title(tmp_path: Path):
     assert data["06-11"][0]["title"] == "Hello world"
 
 
+def test_write_strips_tags_with_gt_in_attribute(tmp_path: Path):
+    generator = make_generator(
+        [make_article(2020, 6, 11, title='<span title="a > b">Hello</span> World')],
+        output_path=str(tmp_path),
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert data["06-11"][0]["title"] == "Hello World"
+
+
+def test_write_respects_max_items_setting(tmp_path: Path):
+    generator = make_generator(
+        [
+            make_article(2022, 6, 11, "newest"),
+            make_article(2021, 6, 11, "middle"),
+            make_article(2020, 6, 11, "oldest"),
+        ],
+        output_path=str(tmp_path),
+    )
+    generator.settings["ON_THIS_DAY_MAX_ITEMS"] = 2
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert [a["title"] for a in data["06-11"]] == ["newest", "middle"]
+
+
+def test_write_unlimited_without_max_items_setting(tmp_path: Path):
+    generator = make_generator(
+        [
+            make_article(2022, 6, 11, "newest"),
+            make_article(2021, 6, 11, "middle"),
+            make_article(2020, 6, 11, "oldest"),
+        ],
+        output_path=str(tmp_path),
+    )
+    _write_on_this_day_data(generator)
+    data = read_data(tmp_path)
+    assert len(data["06-11"]) == 3
+
+
 def test_write_preserves_non_ascii(tmp_path: Path):
     generator = make_generator(
         [make_article(2020, 6, 11, title="歷史上的今天")], output_path=str(tmp_path)
