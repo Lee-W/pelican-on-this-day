@@ -6,7 +6,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Wei Lee", email = "weilee.rx@gmail.com" }]
-keywords = ["pelican", "plugin", "on this day", "history"]
+keywords = [
+  "pelican",
+  "plugin",
+  "on this day",
+  "history",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Plugins",
@@ -27,9 +32,18 @@ dev = [
 
 base = ["poethepoet>=0.41.0"]
 
-test = ["pytest>=9", "pytest-cov>=4", "pytest-xdist>=3.1.0"]
+test = [
+  "pytest>=9",
+  "pytest-cov>=4",
+  "pytest-xdist>=3.1.0",
+]
 
-linters = ["ruff>=0.15.1", "mypy>=1.19.1", "prek>=0.3.3", "commitizen>=4.13.9"]
+linters = [
+  "ruff>=0.15.1",
+  "mypy>=1.19.1",
+  "prek>=0.3.3",
+  "commitizen>=4.13.9",
+]
 
 
 [build-system]
@@ -94,7 +108,7 @@ version_provider = "uv"
 update_changelog_on_bump = true
 major_version_zero = true
 
-[tool.pytest.ini_options]
+[tool.pytest]
 testpaths = ["tests"]
 addopts = ["--cov=pelican.plugins.on_this_day", "--cov-report=term-missing"]
 
